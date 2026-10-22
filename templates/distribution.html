@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% block title %}Distribution{% endblock %}
+{% block content %}
+<h1>Rating distribution</h1>
+{% if stats %}
+<section class="stats">
+  <div class="stat"><b>{{ stats.count }}</b><span>ratings</span></div>
+  <div class="stat"><b>{{ stats.mean }}</b><span>mean</span></div>
+  <div class="stat"><b>{{ stats.median }}</b><span>median</span></div>
+  <div class="stat"><b>{{ stats.std }}</b><span>std. deviation</span></div>
+  <div class="stat"><b>{{ stats.p25 }} - {{ stats.p75 }}</b><span>middle 50%</span></div>
+</section>
+{% endif %}
+<img class="chart" src="{{ url_for('chart_distribution') }}" alt="Histogram of how many ratings each score received">
+{% endblock %}

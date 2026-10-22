@@ -5,3 +5,5 @@ venv/
 .venv/
 .idea/
 .vscode/
+*.db
+.pytest_cache/

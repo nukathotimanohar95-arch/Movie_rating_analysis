@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% block title %}About{% endblock %}
+{% block content %}
+<h1>How this site works</h1>
+
+<h2>Minimum rating count</h2>
+<p>A movie appears in top-rated lists and popularity recommendations only if it has at least
+   <b>{{ MIN_RATING_COUNT }} ratings</b> (configurable with <code>MIN_RATING_COUNT</code>). This stops a single
+   5-star rating from outranking a movie that many people rated.</p>
+
+<h2>Privacy</h2>
+<p>Pages show only averages and counts. You can see your own ratings after logging in; nobody can see another
+   user's ratings. Accounts use a display name and a password hash. No email or real name is stored.</p>
+
+<h2>How recommendations are made</h2>
+<ul>
+  <li><b>Popularity-based:</b> the highest average rating among movies that meet the minimum count, excluding
+      movies you already rated.</li>
+  <li><b>Similarity-based:</b> two movies are similar when people who rated both tend to score them the same way
+      relative to their own average (adjusted cosine similarity). Your suggestions are movies similar to ones you
+      rated, and each result names the movie of yours it was based on. You need at least {{ MIN_USER_RATINGS }} of
+      your own ratings; until then you see popular movies.</li>
+</ul>
+<p class="note">Suggestions are educational and based only on the ratings available here. They are not a guarantee
+   of what you will enjoy.</p>
+
+<h2>Data</h2>
+<p>The starter database contains synthetic sample users and ratings generated for demonstration.</p>
+{% endblock %}

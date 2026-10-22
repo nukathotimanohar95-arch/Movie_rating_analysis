@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+{% block title %}Recommendations{% endblock %}
+{% block content %}
+<h1>Recommendations</h1>
+<p class="note">These are educational suggestions based on the ratings available, not guarantees of what you will enjoy.
+   Every suggestion says why it was chosen.</p>
+
+{% if me %}
+<h2>For you</h2>
+{% if note %}<p class="muted">{{ note }}</p>{% endif %}
+<ul class="cards">
+  {% for s in personal %}
+  <li><a href="{{ url_for('movie_detail', movie_id=s.movie_id) }}"><b>{{ s.title }}</b></a>
+      <span class="muted">{{ s.genre }} · {{ s.release_year }} · ★ {{ '%.2f'|format(s.avg_rating) }} avg ({{ s.rating_count }})</span>
+      {% if s.predicted_rating %}<span class="tag">predicted ★ {{ '%.1f'|format(s.predicted_rating) }}</span>{% endif %}
+      <span class="tag alt">{{ 'similarity-based' if s.method == 'similarity' else 'popularity-based' }}</span>
+      <p class="why">{{ s.reason }}</p></li>
+  {% else %}<li class="muted">Nothing to suggest yet.</li>
+  {% endfor %}
+</ul>
+{% else %}
+<p><a href="{{ url_for('login', next=request.path) }}">Log in</a> to get suggestions based on your own ratings.</p>
+{% endif %}
+
+<h2>Popular with everyone</h2>
+<ul class="cards">
+  {% for s in popular %}
+  <li><a href="{{ url_for('movie_detail', movie_id=s.movie_id) }}"><b>{{ s.title }}</b></a>
+      <span class="muted">{{ s.genre }} · {{ s.release_year }}</span>
+      <p class="why">{{ s.reason }}</p></li>
+  {% else %}<li class="muted">No movie has enough ratings yet.</li>
+  {% endfor %}
+</ul>
+{% endblock %}

@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% block title %}Top rated{% endblock %}
+{% block content %}
+<h1>Top-rated movies</h1>
+<p class="note"><b>Minimum-rating rule:</b> a movie is ranked only if it has at least {{ MIN_RATING_COUNT }} ratings,
+   so one enthusiastic rating cannot beat a movie that many people rated. {{ below }} of {{ total }} movies are
+   currently below the threshold.</p>
+<form class="filters" method="get">
+  <select name="genre" aria-label="Genre">
+    <option value="">All genres</option>
+    {% for g in GENRES %}<option {{ 'selected' if g == genre }}>{{ g }}</option>{% endfor %}
+  </select>
+  <button class="btn">Filter</button>
+</form>
+{% if top %}
+<table>
+  <thead><tr><th>#</th><th>Title</th><th>Genre</th><th>Year</th><th class="num">Avg rating</th><th class="num">Ratings</th></tr></thead>
+  <tbody>
+  {% for m in top %}
+    <tr><td>{{ loop.index }}</td>
+        <td><a href="{{ url_for('movie_detail', movie_id=m.movie_id) }}">{{ m.title }}</a></td>
+        <td>{{ m.genre }}</td><td>{{ m.release_year }}</td>
+        <td class="num">★ {{ '%.2f'|format(m.avg_rating) }}</td><td class="num">{{ m.rating_count }}</td></tr>
+  {% endfor %}
+  </tbody>
+</table>
+<img class="chart" src="{{ url_for('chart_top') }}" alt="Bar chart of the top 10 movies by average rating">
+{% else %}<p class="muted">No movies meet the minimum rating count{{ ' in this genre' if genre }}.</p>{% endif %}
+{% endblock %}

@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{% block title %}My ratings{% endblock %}
+{% block content %}
+<h1>My ratings</h1>
+<p class="muted">Only you can see this page. Other people see only averages and counts.</p>
+<table>
+  <thead><tr><th>Title</th><th>Genre</th><th class="num">Your rating</th><th>Rated on</th><th></th></tr></thead>
+  <tbody>
+  {% for r in rows %}
+    <tr><td><a href="{{ url_for('movie_detail', movie_id=r.movie_id) }}">{{ r.title }}</a></td>
+        <td>{{ r.genre }}</td><td class="num">★ {{ '%g'|format(r.rating) }}</td>
+        <td>{{ r.rated_at.strftime('%Y-%m-%d') }}</td>
+        <td><form method="post" action="{{ url_for('delete_rating', movie_id=r.movie_id) }}" class="inline">
+              <input type="hidden" name="_csrf" value="{{ csrf_token }}"><button class="link">Remove</button></form></td></tr>
+  {% else %}
+    <tr><td colspan="5" class="muted">You have not rated anything yet. <a href="{{ url_for('movie_list') }}">Browse movies</a>.</td></tr>
+  {% endfor %}
+  </tbody>
+</table>
+{% endblock %}

@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+{% block title %}Movies{% endblock %}
+{% block content %}
+<div class="row between">
+  <h1>Movies</h1>
+  {% if me %}<a class="btn" href="{{ url_for('movie_new') }}">Add a movie</a>{% endif %}
+</div>
+<form class="filters" method="get">
+  <input type="search" name="q" value="{{ q }}" placeholder="Search title" aria-label="Search title">
+  <select name="genre" aria-label="Genre">
+    <option value="">All genres</option>
+    {% for g in GENRES %}<option {{ 'selected' if g == genre }}>{{ g }}</option>{% endfor %}
+  </select>
+  <select name="sort" aria-label="Sort by">
+    <option value="title" {{ 'selected' if sort == 'title' }}>Title</option>
+    <option value="rating" {{ 'selected' if sort == 'rating' }}>Average rating</option>
+    <option value="count" {{ 'selected' if sort == 'count' }}>Most rated</option>
+    <option value="year" {{ 'selected' if sort == 'year' }}>Newest</option>
+  </select>
+  <button class="btn">Apply</button>
+</form>
+<table>
+  <thead><tr><th>Title</th><th>Genre</th><th>Year</th><th class="num">Avg rating</th><th class="num">Ratings</th></tr></thead>
+  <tbody>
+  {% for m in movies %}
+    <tr>
+      <td><a href="{{ url_for('movie_detail', movie_id=m.movie_id) }}">{{ m.title }}</a></td>
+      <td>{{ m.genre }}</td><td>{{ m.release_year }}</td>
+      <td class="num">{% if m.rating_count %}★ {{ '%.2f'|format(m.avg_rating) }}{% else %}-{% endif %}
+        {% if not m.qualifies %}<span class="tag" title="Needs at least {{ MIN_RATING_COUNT }} ratings to be ranked">not ranked</span>{% endif %}</td>
+      <td class="num">{{ m.rating_count }}</td>
+    </tr>
+  {% else %}
+    <tr><td colspan="5" class="muted">No movies match.</td></tr>
+  {% endfor %}
+  </tbody>
+</table>
+{% endblock %}

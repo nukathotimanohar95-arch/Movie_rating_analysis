@@ -1,62 +1,60 @@
-# Movie Ratings Analysis and Basic Recommendation System
+# CineStats: Movie Ratings Analysis and Basic Recommendation System
 
-Flask + MySQL + Pandas/NumPy/Matplotlib project that analyzes movie ratings and
-genre preferences and produces simple, explainable recommendations.
+A Flask website that stores movie ratings, analyses them (Pandas, NumPy, Matplotlib) and
+gives explainable recommendations. Uses MySQL (or SQLite for a zero-setup start).
 
-> Recommendations are educational suggestions based on available ratings, not
-> claims of guaranteed preference.
+> Recommendations are educational suggestions based on available ratings, not guarantees of preference.
 
-## Documented rules
-- **Minimum rating count:** a movie appears in top-rated lists and popularity
-  recommendations only if it has at least `MIN_RATING_COUNT` ratings
-  (default **3**, set in `.env`).
-- **Privacy:** public endpoints return aggregates only. Users never see other
-  users' individual ratings. `display_name` is optional; no email or real name is stored.
-- **Explainability:** every recommendation includes a `reason` field.
-
-## Setup
+## Run it (PyCharm or terminal)
 ```bash
-python -m venv venv && source venv/bin/activate
+python -m venv venv
+venv\Scripts\activate            # Mac/Linux: source venv/bin/activate
 pip install -r requirements.txt
-cp .env.example .env            # edit DB credentials
-mysql -u root -p < database/schema.sql
-mysql -u root -p < database/seed.sql
-flask --app app run --debug
+python init_db.py                # creates tables + sample data (SQLite by default)
+python app.py                    # open http://127.0.0.1:5000
 ```
+Run the tests with `python -m pytest`.
 
-## Database schema
-| Table | Columns |
+### Use MySQL instead of SQLite
+1. In MySQL: `CREATE DATABASE movie_ratings CHARACTER SET utf8mb4;`
+2. Copy `.env.example` to `.env` and set `DATABASE_URL=mysql+pymysql://root:YOUR_PASSWORD@localhost:3306/movie_ratings?charset=utf8mb4`
+3. Run `python init_db.py` (use `--reset` to wipe and reseed), then `python app.py`.
+
+(`database/schema.sql` is the same schema as plain SQL, if you prefer to run it yourself.)
+
+## Documented rules (acceptance criteria)
+- **Minimum rating count:** a movie is ranked or recommended by popularity only with at least
+  `MIN_RATING_COUNT` ratings (default **3**, set in `.env`). Shown on the Top rated, About and footer.
+- **Privacy:** pages and APIs show only averages and counts. A person sees their own ratings only after
+  logging in (display name + password hash; no email or real name stored). Nobody can see another user's ratings.
+  Sample users have no password, so nobody can log in as them.
+- **Explainable recommendations:** every result has a plain-language reason. Personalised reasons cite
+  only the viewer's own ratings plus aggregate similarity.
+
+## Pages and URLs
+| URL | Purpose |
 |---|---|
-| movies | movie_id, title, release_year, genre |
-| users | user_id, display_name (optional) |
-| ratings | rating_id, user_id, movie_id, rating (0.5-5.0), rated_at; unique (user_id, movie_id) |
-| genres / movie_genres | optional multi-genre support for similarity |
-| movie_stats (view) | per-movie rating_count and avg_rating, no user data |
+| `/` | Dashboard: totals, top 5, best genres |
+| `/movies`, `/movies/<id>`, `/movies/new` | Browse, detail (aggregate stats + similar movies), add a movie |
+| `/movies/<id>/rate` (POST) | Rate a movie (login required) |
+| `/top-rated` | Ranking with minimum-count rule, genre filter, chart |
+| `/genres` | Genre comparison + chart |
+| `/distribution` | Rating histogram + NumPy statistics |
+| `/recommendations` | Personalised (similarity) and popularity-based suggestions |
+| `/my-ratings` | Your own ratings only (login required) |
+| `/register`, `/login`, `/logout` | Accounts |
+| `/about` | Rules and method |
+| `/charts/genres.png`, `/charts/distribution.png`, `/charts/top-rated.png` | Matplotlib charts |
+| `/api/top-rated`, `/api/genres`, `/api/distribution`, `/api/recommendations/popular`, `/api/movies/<id>/similar` | JSON, aggregates only |
 
-## Flask URLs
-| Method | URL | Purpose |
-|---|---|---|
-| GET | `/` | Home page |
-| GET | `/movies` | All movies with avg rating and count |
-| POST | `/movies` | Add a movie |
-| GET | `/movies/<id>` | Movie aggregate stats |
-| POST | `/users` | Create user (display name optional) |
-| POST | `/ratings` | Add or update a rating |
-| GET | `/users/<id>/ratings` | A user's own ratings (needs auth, TODO) |
-| GET | `/analysis/top-rated?limit=&min_count=` | Top-rated with minimum-count rule |
-| GET | `/analysis/genres` | Genre comparison |
-| GET | `/analysis/distribution` | Rating distribution |
-| GET | `/analysis/stats` | NumPy/Pandas statistics |
-| GET | `/charts/genres.png` | Genre chart (TODO) |
-| GET | `/charts/distribution.png` | Distribution chart (TODO) |
-| GET | `/recommendations/popular` | Popularity-based recommendations |
-| GET | `/recommendations/user/<id>` | Similarity-based, optional (TODO) |
-| GET | `/recommendations/similar/<movie_id>` | Similar movies, optional (TODO) |
+## How recommendations work
+- **Popularity:** highest average rating among movies meeting the minimum count, excluding ones you rated.
+- **Similarity (item-item):** movies are similar when people who rated both score them alike relative to their
+  own average (adjusted cosine similarity in NumPy; at least 2 common raters). A movie is suggested because it is
+  similar to movies you rated highly. You need 3 ratings of your own, otherwise you see popular movies.
 
-## Roadmap
-1. Schema + seed data (done)
-2. Core routes and aggregation (done)
-3. Matplotlib charts
-4. Simple authentication for per-user data
-5. Similarity recommender (scikit-learn cosine similarity)
-6. Tests
+## Project layout
+`app.py` routes · `db.py` tables · `analysis.py` Pandas/NumPy · `recommender.py` · `charts.py` Matplotlib ·
+`init_db.py` schema + sample data · `templates/` · `static/` · `tests/`
+
+The starter data is synthetic (fixed random seed) for demonstration.
