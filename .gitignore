@@ -1,10 +1,64 @@
-
+# Python cache files
 __pycache__/
-*.pyc
-.env
+*.py[cod]
+*$py.class
+
+# Virtual environments
 venv/
 .venv/
+env/
+ENV/
+
+# Environment variables and secrets
+.env
+.env.*
+
+# IDE settings
 .idea/
 .vscode/
+
+# Testing and coverage
 .pytest_cache/
+.coverage
+htmlcov/
+.tox/
+.nox/
+
+# Build and distribution files
+build/
+dist/
+*.egg-info/
+
+# Logs and temporary files
+*.log
+tempCodeRunnerFile.py
+
+# Local databases - do not upload
 movie_ratings.db
+*.sqlite
+*.sqlite3
+db.sqlite3
+
+# Flask local instance and assets
+instance/
+.webassets-cache/
+
+# Python tools
+.mypy_cache/
+.ruff_cache/
+.pytype/
+.pyre/
+.dmypy.json
+
+# Jupyter
+.ipynb_checkpoints/
+
+# PyInstaller
+*.manifest
+*.spec
+
+# Package manager and tool caches
+.pdm-python
+.pdm-build/
+.pixi/
+__pypackages__/
