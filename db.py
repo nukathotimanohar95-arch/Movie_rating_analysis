@@ -1,46 +1,90 @@
-"""Database tables (SQLAlchemy Core). Works with MySQL and SQLite."""
-from datetime import datetime
 
-from sqlalchemy import (CheckConstraint, Column, DateTime, Float, ForeignKey, Index, Integer,
-                        MetaData, SmallInteger, String, Table, UniqueConstraint, create_engine)
+"""Database tables using SQLAlchemy Core.
+Matches the existing movie_rating MySQL database.
+"""
+
+from sqlalchemy import (
+    Column,
+    Integer,
+    String,
+    ForeignKey,
+    Numeric,
+    TIMESTAMP,
+    MetaData,
+    Table,
+    create_engine,
+    text,
+)
 
 from config import DATABASE_URL
 
 engine = create_engine(DATABASE_URL, pool_pre_ping=True)
 metadata = MetaData()
 
+
+# 1. Genres table
+genres = Table(
+    "genres",
+    metadata,
+    Column("genre_id", Integer, primary_key=True, autoincrement=True),
+    Column("genre_name", String(100), nullable=False, unique=True),
+)
+
+
+# 2. Movies table
 movies = Table(
-    "movies", metadata,
+    "movies",
+    metadata,
     Column("movie_id", Integer, primary_key=True, autoincrement=True),
-    Column("title", String(200), nullable=False),
-    Column("release_year", SmallInteger, nullable=False),
-    Column("genre", String(50), nullable=False),
-    UniqueConstraint("title", "release_year", name="uq_title_year"),
-    CheckConstraint("release_year BETWEEN 1888 AND 2100", name="chk_year"),
-    Index("idx_movies_genre", "genre"),
+    Column("title", String(150), nullable=False),
+    Column("release_year", Integer, nullable=True),
+    Column(
+        "genre_id",
+        Integer,
+        ForeignKey("genres.genre_id"),
+        nullable=False,
+    ),
 )
 
-# display_name is optional in the data model; password_hash lets a person see only their own ratings.
+
+# 3. Users table
 users = Table(
-    "users", metadata,
+    "users",
+    metadata,
     Column("user_id", Integer, primary_key=True, autoincrement=True),
-    Column("display_name", String(50), nullable=True, unique=True),
+    Column("display_name", String(100), nullable=True),
     Column("password_hash", String(255), nullable=True),
-    Column("created_at", DateTime, default=datetime.utcnow),
 )
 
+
+# 4. Ratings table
 ratings = Table(
-    "ratings", metadata,
+    "ratings",
+    metadata,
     Column("rating_id", Integer, primary_key=True, autoincrement=True),
-    Column("user_id", Integer, ForeignKey("users.user_id", ondelete="CASCADE"), nullable=False),
-    Column("movie_id", Integer, ForeignKey("movies.movie_id", ondelete="CASCADE"), nullable=False),
-    Column("rating", Float, nullable=False),
-    Column("rated_at", DateTime, default=datetime.utcnow, nullable=False),
-    UniqueConstraint("user_id", "movie_id", name="uq_user_movie"),  # one rating per user per movie
-    CheckConstraint("rating >= 0.5 AND rating <= 5.0", name="chk_rating"),
-    Index("idx_ratings_movie", "movie_id"),
+    Column(
+        "user_id",
+        Integer,
+        ForeignKey("users.user_id"),
+        nullable=False,
+    ),
+    Column(
+        "movie_id",
+        Integer,
+        ForeignKey("movies.movie_id"),
+        nullable=False,
+    ),
+    Column("rating", Numeric(2, 1), nullable=False),
+    Column(
+        "rated_at",
+        TIMESTAMP,
+        server_default=text("CURRENT_TIMESTAMP"),
+        nullable=True,
+    ),
 )
 
 
 def create_tables():
+    """Create any missing tables; do not alter existing tables."""
     metadata.create_all(engine)
+
