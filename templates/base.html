@@ -1,46 +1,108 @@
+
 <!doctype html>
 <html lang="en">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>{% block title %}Movie Ratings{% endblock %} · CineStats</title>
-  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#111027">
+
+    <title>{% block title %}Movie Ratings{% endblock %} | CineStats</title>
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='style.css') }}">
 </head>
+
 <body>
-<header class="top">
-  <div class="wrap bar">
-    <a class="brand" href="{{ url_for('index') }}">CineStats</a>
-    <nav>
-      <a href="{{ url_for('movie_list') }}">Movies</a>
-      <a href="{{ url_for('top_rated_page') }}">Top rated</a>
-      <a href="{{ url_for('genres_page') }}">Genres</a>
-      <a href="{{ url_for('distribution_page') }}">Distribution</a>
-      <a href="{{ url_for('recommendations') }}">Recommendations</a>
-      <a href="{{ url_for('about') }}">About</a>
-    </nav>
-    <div class="acct">
-      {% if me %}
-        <a href="{{ url_for('my_ratings') }}">{{ me.display_name }}</a>
-        <form method="post" action="{{ url_for('logout') }}" class="inline">
-          <input type="hidden" name="_csrf" value="{{ csrf_token }}">
-          <button class="link">Log out</button>
-        </form>
-      {% else %}
-        <a href="{{ url_for('login') }}">Log in</a>
-        <a class="btn small" href="{{ url_for('register') }}">Sign up</a>
-      {% endif %}
-    </div>
-  </div>
-</header>
-<main class="wrap">
-  {% with msgs = get_flashed_messages(with_categories=true) %}
-    {% for cat, msg in msgs %}<div class="flash {{ cat }}" role="status">{{ msg }}</div>{% endfor %}
-  {% endwith %}
-  {% block content %}{% endblock %}
-</main>
-<footer class="wrap foot">
-  Recommendations are educational suggestions based on available ratings, not guarantees of preference.
-  Ranked lists need at least {{ MIN_RATING_COUNT }} ratings per movie.
-</footer>
+<div class="site-shell">
+
+    <!-- Navigation bar -->
+    <header class="top">
+        <div class="wrap bar">
+
+            <a class="brand" href="{{ url_for('home') }}">
+                <span class="brand-icon">C</span>
+                <span>Cine<span class="brand-accent">Stats</span></span>
+            </a>
+
+            <nav class="main-nav" aria-label="Main navigation">
+                <a href="{{ url_for('home') }}">Home</a>
+                <a href="{{ url_for('analysis_page') }}">Analysis</a>
+
+                {% if session.get('user_id') %}
+                    <a href="{{ url_for('add_movie') }}">Add Movie</a>
+                    <a href="{{ url_for('recommendations_page') }}">
+                        Recommendations
+                    </a>
+                    <a href="{{ url_for('my_ratings') }}">My Ratings</a>
+                {% else %}
+                    <a href="{{ url_for('login') }}">Recommendations</a>
+                {% endif %}
+            </nav>
+
+            <div class="acct">
+                {% if session.get('user_id') %}
+                    <a class="account-link"
+                       href="{{ url_for('my_ratings') }}">
+                        {{ session.get('display_name', 'My Account') }}
+                    </a>
+
+                    <form method="post"
+                          action="{{ url_for('logout') }}"
+                          class="inline">
+                        <button type="submit" class="link">
+                            Log Out
+                        </button>
+                    </form>
+                {% else %}
+                    <a class="login-link"
+                       href="{{ url_for('login') }}">Log In</a>
+
+                    <a class="btn small"
+                       href="{{ url_for('register') }}">Sign Up</a>
+                {% endif %}
+            </div>
+
+        </div>
+    </header>
+
+    <!-- Main page content -->
+    <main class="wrap page-main">
+
+        {% with msgs = get_flashed_messages(with_categories=true) %}
+            {% for cat, msg in msgs %}
+                <div class="flash {{ cat }}" role="status">
+                    {{ msg }}
+                </div>
+            {% endfor %}
+        {% endwith %}
+
+        {% block content %}{% endblock %}
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="site-footer">
+        <div class="wrap footer-content">
+            <a class="footer-brand" href="{{ url_for('home') }}">
+                Cine<span class="brand-accent">Stats</span>
+            </a>
+
+            <p>
+                Discover movies. Explore ratings. Find your next favourite.
+            </p>
+
+            <p class="footer-note">
+                Recommendations are educational suggestions based on
+                available ratings, not guarantees of preference.
+                Ranked lists use a minimum rating-count rule.
+            </p>
+
+            <p class="copyright">
+                &copy; {{ 2026 }} CineStats · Movie Rating Analysis System
+            </p>
+        </div>
+    </footer>
+
+</div>
 </body>
 </html>

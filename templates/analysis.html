@@ -1,0 +1,106 @@
+
+{% extends "base.html" %}
+
+{% block title %}Movie Rating Analysis{% endblock %}
+
+{% block content %}
+
+<h1>Movie Rating Analysis Dashboard</h1>
+<p>Analyze movie ratings, popular movies, and genre performance.</p>
+
+<section>
+    <h2>Rating Statistics</h2>
+
+    {% if movie_analysis.rating_stats %}
+        <p>Total ratings: {{ movie_analysis.rating_stats.count }}</p>
+        <p>Average rating: {{ movie_analysis.rating_stats.mean }}</p>
+        <p>Median rating: {{ movie_analysis.rating_stats.median }}</p>
+        <p>Minimum rating: {{ movie_analysis.rating_stats.min }}</p>
+        <p>Maximum rating: {{ movie_analysis.rating_stats.max }}</p>
+    {% else %}
+        <p>No ratings are available yet.</p>
+    {% endif %}
+</section>
+
+<section>
+    <h2>Top-Rated Movies</h2>
+
+    {% if movie_analysis.top_rated %}
+        <table>
+            <thead>
+                <tr>
+                    <th>Movie</th>
+                    <th>Genre</th>
+                    <th>Average Rating</th>
+                    <th>Total Ratings</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for movie in movie_analysis.top_rated %}
+                    <tr>
+                        <td>{{ movie.title }}</td>
+                        <td>{{ movie.genre }}</td>
+                        <td>{{ movie.avg_rating }}</td>
+                        <td>{{ movie.rating_count }}</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% else %}
+        <p>No movies meet the minimum rating requirement yet.</p>
+    {% endif %}
+</section>
+
+<section>
+    <h2>Rating Distribution</h2>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Rating</th>
+                <th>Number of Ratings</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for item in movie_analysis.distribution %}
+                <tr>
+                    <td>{{ item.rating }}</td>
+                    <td>{{ item.count }}</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</section>
+
+<section>
+    <h2>Genre Analysis</h2>
+
+    {% if genre_analysis %}
+        <table>
+            <thead>
+                <tr>
+                    <th>Genre</th>
+                    <th>Movies</th>
+                    <th>Ranked Movies</th>
+                    <th>Total Ratings</th>
+                    <th>Average Rating</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for genre in genre_analysis %}
+                    <tr>
+                        <td>{{ genre.genre }}</td>
+                        <td>{{ genre.movies }}</td>
+                        <td>{{ genre.ranked_movies }}</td>
+                        <td>{{ genre.total_ratings }}</td>
+                        <td>{{ genre.avg_rating }}</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% else %}
+        <p>No genre data is available yet.</p>
+    {% endif %}
+</section>
+
+{% endblock %}

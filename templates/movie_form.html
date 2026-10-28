@@ -1,16 +1,54 @@
+```html
 {% extends "base.html" %}
+
 {% block title %}Add a movie{% endblock %}
+
 {% block content %}
 <h1>Add a movie</h1>
+
 <form method="post" class="form">
-  <input type="hidden" name="_csrf" value="{{ csrf_token }}">
-  <label>Title <input name="title" maxlength="200" required value="{{ request.form.get('title', '') }}"></label>
-  <label>Release year <input name="release_year" type="number" min="1888" max="2100" required value="{{ request.form.get('release_year', '') }}"></label>
-  <label>Genre
-    <select name="genre" required>
-      {% for g in GENRES %}<option {{ 'selected' if request.form.get('genre') == g }}>{{ g }}</option>{% endfor %}
-    </select>
-  </label>
-  <button class="btn">Add movie</button>
+    <input type="hidden" name="_csrf" value="{{ csrf_token }}">
+
+    <label>
+        Title
+        <input
+            name="title"
+            maxlength="150"
+            required
+            value="{{ request.form.get('title', '') }}"
+        >
+    </label>
+
+    <label>
+        Release year
+        <input
+            name="release_year"
+            type="number"
+            min="1888"
+            max="2100"
+            value="{{ request.form.get('release_year', '') }}"
+        >
+    </label>
+
+    <label>
+        Genre
+        <select name="genre_id" required>
+            <option value="">-- Select a genre --</option>
+
+            {% for g in genres %}
+                <option
+                    value="{{ g.genre_id }}"
+                    {% if request.form.get('genre_id', '')|string == g.genre_id|string %}
+                        selected
+                    {% endif %}
+                >
+                    {{ g.genre_name }}
+                </option>
+            {% endfor %}
+        </select>
+    </label>
+
+    <button type="submit" class="btn">Add movie</button>
 </form>
 {% endblock %}
+```

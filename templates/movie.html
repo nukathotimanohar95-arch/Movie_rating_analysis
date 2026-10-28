@@ -1,51 +1,91 @@
+
 {% extends "base.html" %}
-{% block title %}{{ movie.title }}{% endblock %}
+
+{% block title %}{{ movie.title }} | CineStats{% endblock %}
+
 {% block content %}
-<p><a href="{{ url_for('movie_list') }}">← All movies</a></p>
-<h1>{{ movie.title }} <small class="muted">({{ movie.release_year }})</small></h1>
-<p class="muted">{{ movie.genre }}</p>
 
-<div class="cols">
-  <section>
-    <h2>Ratings</h2>
-    {% if movie.rating_count %}
-      <p class="big">★ {{ '%.2f'|format(movie.avg_rating) }} <small>from {{ movie.rating_count }} rating{{ '' if movie.rating_count == 1 else 's' }}</small></p>
-      {% if not movie.qualifies %}
-        <p class="note">Not ranked yet: it needs at least {{ MIN_RATING_COUNT }} ratings.</p>
-      {% endif %}
-      <div class="bars" role="img" aria-label="Rating distribution for this movie">
-        {% for b in bars %}
-        <div class="barrow"><span>{{ b.rating }}</span><div class="barbg"><div class="barfill" style="width: {{ b.pct }}%"></div></div><span>{{ b.count }}</span></div>
-        {% endfor %}
-      </div>
-    {% else %}<p class="muted">No ratings yet.</p>{% endif %}
-  </section>
+<div class="movie-detail-page">
 
-  <section>
-    <h2>Your rating</h2>
-    {% if me %}
-      {% if my_rating %}<p>You rated this <b>★ {{ '%g'|format(my_rating) }}</b>. You can change it:</p>{% endif %}
-      <form method="post" action="{{ url_for('rate', movie_id=movie.movie_id) }}" class="row">
-        <input type="hidden" name="_csrf" value="{{ csrf_token }}">
-        <select name="rating" aria-label="Your rating">
-          {% for v in RATING_VALUES|reverse %}<option value="{{ v }}" {{ 'selected' if my_rating == v }}>{{ '%g'|format(v) }}</option>{% endfor %}
-        </select>
-        <button class="btn">Save rating</button>
-      </form>
-    {% else %}
-      <p><a href="{{ url_for('login', next=request.path) }}">Log in</a> to rate this movie.</p>
-    {% endif %}
-  </section>
+    <a class="back-link" href="{{ url_for('home') }}">
+        ← Back to all movies
+    </a>
+
+    <section class="movie-detail-hero">
+        <div class="detail-poster" aria-hidden="true">
+            <span>🎬</span>
+            <small>CINESTATS</small>
+        </div>
+
+        <div class="detail-info">
+            <span class="eyebrow">MOVIE DETAILS</span>
+
+            <h1>{{ movie.title }}</h1>
+
+            <div class="detail-meta">
+                <span class="movie-genre">
+                    {{ movie.genre if movie.genre else 'Genre unavailable' }}
+                </span>
+
+                <span class="detail-year">
+                    📅 {{ movie.release_year if movie.release_year else 'Year unavailable' }}
+                </span>
+            </div>
+
+            <p class="detail-description">
+                Explore this movie's rating and see what viewers think.
+            </p>
+
+            <div class="rating-panel">
+                <span class="rating-label">OVERALL RATING</span>
+
+                {% if movie.total_ratings and movie.total_ratings > 0 %}
+                    <p class="big">
+                        ★ {{ movie.overall_rating }}
+                        <small>/ 5</small>
+                    </p>
+
+                    <p class="muted">
+                        Based on {{ movie.total_ratings }}
+                        rating{% if movie.total_ratings != 1 %}s{% endif %}
+                    </p>
+                {% else %}
+                    <p class="big">—</p>
+                    <p class="muted">No ratings yet. Be the first to rate it!</p>
+                {% endif %}
+            </div>
+
+            {% if session.get('user_id') %}
+                <a class="btn detail-rate-btn"
+                   href="{{ url_for('rate_movie', movie_id=movie.movie_id) }}">
+                    ★ Rate This Movie
+                </a>
+            {% else %}
+                <a class="btn detail-rate-btn"
+                   href="{{ url_for('login') }}">
+                    Log In to Rate This Movie
+                </a>
+
+                <p class="muted">
+                    New to CineStats?
+                    <a href="{{ url_for('register') }}">Create an account</a>
+                </p>
+            {% endif %}
+        </div>
+    </section>
+
+    <section class="detail-bottom">
+        <h2>About the ratings</h2>
+        <p class="muted">
+            The overall rating is calculated from the ratings stored
+            in CineStats. It may change as more ratings are submitted.
+        </p>
+
+        <a href="{{ url_for('analysis_page') }}">
+            Explore rating analysis →
+        </a>
+    </section>
+
 </div>
 
-<h2>Similar movies</h2>
-{% if similar %}
-<ul class="cards">
-  {% for s in similar %}
-  <li><a href="{{ url_for('movie_detail', movie_id=s.movie_id) }}"><b>{{ s.title }}</b></a>
-      <span class="muted">{{ s.genre }} · ★ {{ '%.2f'|format(s.avg_rating) }}</span>
-      <p class="why">{{ s.reason }}</p></li>
-  {% endfor %}
-</ul>
-{% else %}<p class="muted">Not enough overlapping ratings yet to find similar movies.</p>{% endif %}
 {% endblock %}

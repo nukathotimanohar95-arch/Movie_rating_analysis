@@ -1,12 +1,56 @@
+
 {% extends "base.html" %}
+
 {% block title %}Sign up{% endblock %}
+
 {% block content %}
 <h1>Create an account</h1>
-<p class="muted">Only a display name and a password. No email or real name is stored. Your ratings stay private to you.</p>
+
+<p class="muted">
+    Only a display name and a password are required.
+    No email or real name is stored.
+</p>
+
 <form method="post" class="form">
-  <input type="hidden" name="_csrf" value="{{ csrf_token }}">
-  <label>Display name <input name="display_name" required minlength="2" maxlength="50" autocomplete="username"></label>
-  <label>Password (6+ characters) <input name="password" type="password" required minlength="6" autocomplete="new-password"></label>
-  <button class="btn">Sign up</button>
+    <label>
+        Display name
+        <input
+            name="display_name"
+            type="text"
+            required
+            minlength="2"
+            maxlength="50"
+            autocomplete="username"
+        >
+    </label>
+
+    <label>
+        Password (8+ characters)
+        <input
+            name="password"
+            type="password"
+            required
+            minlength="8"
+            autocomplete="new-password"
+        >
+    </label>
+
+    <label>
+        Confirm password
+        <input
+            name="confirm_password"
+            type="password"
+            required
+            minlength="8"
+            autocomplete="new-password"
+        >
+    </label>
+
+    <button type="submit" class="btn">Sign up</button>
 </form>
+
+<p class="muted">
+    Already have an account?
+    <a href="{{ url_for('login') }}">Log in</a>
+</p>
 {% endblock %}

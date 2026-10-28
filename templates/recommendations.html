@@ -1,34 +1,74 @@
+
 {% extends "base.html" %}
+
 {% block title %}Recommendations{% endblock %}
+
 {% block content %}
-<h1>Recommendations</h1>
-<p class="note">These are educational suggestions based on the ratings available, not guarantees of what you will enjoy.
-   Every suggestion says why it was chosen.</p>
 
-{% if me %}
-<h2>For you</h2>
-{% if note %}<p class="muted">{{ note }}</p>{% endif %}
-<ul class="cards">
-  {% for s in personal %}
-  <li><a href="{{ url_for('movie_detail', movie_id=s.movie_id) }}"><b>{{ s.title }}</b></a>
-      <span class="muted">{{ s.genre }} · {{ s.release_year }} · ★ {{ '%.2f'|format(s.avg_rating) }} avg ({{ s.rating_count }})</span>
-      {% if s.predicted_rating %}<span class="tag">predicted ★ {{ '%.1f'|format(s.predicted_rating) }}</span>{% endif %}
-      <span class="tag alt">{{ 'similarity-based' if s.method == 'similarity' else 'popularity-based' }}</span>
-      <p class="why">{{ s.reason }}</p></li>
-  {% else %}<li class="muted">Nothing to suggest yet.</li>
-  {% endfor %}
-</ul>
-{% else %}
-<p><a href="{{ url_for('login', next=request.path) }}">Log in</a> to get suggestions based on your own ratings.</p>
-{% endif %}
+<h1>Movie Recommendations</h1>
 
-<h2>Popular with everyone</h2>
-<ul class="cards">
-  {% for s in popular %}
-  <li><a href="{{ url_for('movie_detail', movie_id=s.movie_id) }}"><b>{{ s.title }}</b></a>
-      <span class="muted">{{ s.genre }} · {{ s.release_year }}</span>
-      <p class="why">{{ s.reason }}</p></li>
-  {% else %}<li class="muted">No movie has enough ratings yet.</li>
-  {% endfor %}
-</ul>
+<p class="note">
+    These are educational suggestions based on available ratings,
+    not guarantees of what you will enjoy.
+</p>
+
+<p class="muted">
+    Movies qualify for recommendations when they have at least
+    3 ratings.
+</p>
+
+<section>
+    <h2>Recommended for You</h2>
+
+    {% if recommendations %}
+        <ul class="cards">
+            {% for movie in recommendations %}
+                <li>
+                    <strong>{{ movie.title }}</strong>
+
+                    <p class="muted">
+                        Genre: {{ movie.genre }}
+                        {% if movie.release_year %}
+                            · Year: {{ movie.release_year }}
+                        {% endif %}
+                    </p>
+
+                    <p>
+                        Average rating:
+                        ★ {{ '%.2f'|format(movie.avg_rating) }}
+                        ({{ movie.rating_count }} ratings)
+                    </p>
+
+                    {% if movie.predicted_rating is defined %}
+                        <p class="tag">
+                            Predicted rating:
+                            ★ {{ '%.2f'|format(movie.predicted_rating) }}
+                        </p>
+                    {% endif %}
+
+                    <p class="tag">
+                        {% if movie.method == 'similarity' %}
+                            Similarity-based recommendation
+                        {% else %}
+                            Popularity-based recommendation
+                        {% endif %}
+                    </p>
+
+                    <p class="why">{{ movie.reason }}</p>
+                </li>
+            {% endfor %}
+        </ul>
+    {% else %}
+        <p>
+            No recommendations are available yet.
+            Add movies and ratings to get started.
+        </p>
+    {% endif %}
+</section>
+
+<p>
+    You need to rate at least {{ minimum_ratings }} movies
+    to unlock personalized recommendations.
+</p>
+
 {% endblock %}

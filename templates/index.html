@@ -1,40 +1,201 @@
+
 {% extends "base.html" %}
-{% block title %}Home{% endblock %}
+
+{% block title %}Discover Movies | CineStats{% endblock %}
+
 {% block content %}
-<section class="hero">
-  <h1>What does everyone rate highest?</h1>
-  <p>Explore movie ratings, compare genres, and get recommendations you can actually explain.</p>
+
+<!-- Hero section -->
+<section class="hero home-hero">
+    <div class="hero-content">
+        <span class="eyebrow">🎬 YOUR MOVIE DISCOVERY HUB</span>
+
+        <h1>
+            Every movie has a story.<br>
+            <span class="gradient-text">Find your next favourite.</span>
+        </h1>
+
+        <p>
+            Explore movies, discover genres, and dive into ratings.
+            Your next great movie experience starts here.
+        </p>
+
+        <div class="hero-actions">
+            <a href="#discover-movies" class="btn">
+                Explore Movies <span aria-hidden="true">→</span>
+            </a>
+
+            <a href="{{ url_for('recommendations_page') }}"
+               class="btn btn-outline">
+                Get Recommendations
+            </a>
+        </div>
+
+        <div class="hero-features">
+            <span>✦ Movie discovery</span>
+            <span>✦ Rating analysis</span>
+            <span>✦ Smarter recommendations</span>
+        </div>
+    </div>
+
+    <div class="hero-decoration" aria-hidden="true">
+        <div class="hero-orb orb-one"></div>
+        <div class="hero-orb orb-two"></div>
+        <div class="hero-film">▶</div>
+        <div class="floating-star star-one">✦</div>
+        <div class="floating-star star-two">★</div>
+    </div>
 </section>
 
-<section class="stats">
-  <div class="stat"><b>{{ totals.movies }}</b><span>movies</span></div>
-  <div class="stat"><b>{{ totals.ratings }}</b><span>ratings</span></div>
-  <div class="stat"><b>{{ totals.users }}</b><span>users</span></div>
-  <div class="stat"><b>{{ totals.avg if totals.avg is not none else '-' }}</b><span>average rating</span></div>
+<!-- Movie discovery section -->
+<section class="discover-section" id="discover-movies">
+
+    <div class="section-heading">
+        <div>
+            <span class="eyebrow">EXPLORE THE COLLECTION</span>
+            <h2>Discover Movies <span class="heading-emoji">🍿</span></h2>
+            <p class="muted">
+                Find a film that matches your mood.
+            </p>
+        </div>
+
+        {% if session.get('user_id') %}
+            <a class="btn" href="{{ url_for('add_movie') }}">
+                + Add Movie
+            </a>
+        {% endif %}
+    </div>
+
+    <!-- Search form -->
+    <form action="{{ url_for('home') }}"
+          method="GET"
+          class="search-form"
+          role="search">
+
+        <input
+            type="search"
+            name="q"
+            placeholder="Search movies by title..."
+            value="{{ search_text }}"
+            aria-label="Search movies by title"
+        >
+
+        <button type="submit" class="btn">
+            🔍 Search
+        </button>
+
+        {% if search_text %}
+            <a href="{{ url_for('home') }}"
+               class="btn btn-outline">
+                Clear
+            </a>
+        {% endif %}
+    </form>
+
+    {% if search_text %}
+        <p class="search-results-text">
+            Results for <strong>{{ search_text }}</strong>:
+            {{ movies|length }} movie(s) found.
+        </p>
+    {% endif %}
+
+    {% if movies %}
+
+        <div class="movie-list">
+            {% for m in movies %}
+                <article class="movie-card">
+
+                    <div class="movie-card-art" aria-hidden="true">
+                        <span class="movie-art-icon">🎬</span>
+                        <span class="movie-art-label">CINESTATS</span>
+                    </div>
+
+                    <div class="movie-card-body">
+
+                        <span class="movie-genre">
+                            {{ m.genre if m.genre else 'Genre unavailable' }}
+                        </span>
+
+                        <h3>
+                            <a href="{{ url_for('movie_detail', movie_id=m.movie_id) }}">
+                                {{ m.title }}
+                            </a>
+                        </h3>
+
+                        <p class="movie-year">
+                            <span aria-hidden="true">📅</span>
+                            {{ m.release_year if m.release_year else 'Year unavailable' }}
+                        </p>
+
+                        <a class="movie-details-link"
+                           href="{{ url_for('movie_detail', movie_id=m.movie_id) }}">
+                            View Movie Details
+                            <span aria-hidden="true">→</span>
+                        </a>
+
+                    </div>
+                </article>
+            {% endfor %}
+        </div>
+
+    {% elif search_text %}
+
+        <!-- No matching movies -->
+        <div class="empty-state">
+            <div class="empty-icon">🔎</div>
+            <h3>No movies found</h3>
+
+            <p class="muted">
+                We couldn't find a movie matching
+                "{{ search_text }}". Try another title.
+            </p>
+
+            <a class="btn" href="{{ url_for('home') }}">
+                Show All Movies
+            </a>
+        </div>
+
+    {% else %}
+
+        <!-- Empty movie collection -->
+        <div class="empty-state">
+            <div class="empty-icon">🎞️</div>
+            <h3>Your movie collection starts here</h3>
+
+            <p class="muted">
+                There are no movies to display yet. Add a movie to begin
+                exploring your collection.
+            </p>
+
+            {% if session.get('user_id') %}
+                <a class="btn" href="{{ url_for('add_movie') }}">
+                    Add Your First Movie
+                </a>
+            {% else %}
+                <a class="btn" href="{{ url_for('register') }}">
+                    Create an Account
+                </a>
+            {% endif %}
+        </div>
+
+    {% endif %}
+
 </section>
 
-<div class="cols">
-  <section>
-    <h2>Top rated <small>(min. {{ MIN_RATING_COUNT }} ratings)</small></h2>
-    {% if top %}
-    <ol class="rank">
-      {% for m in top %}
-      <li><a href="{{ url_for('movie_detail', movie_id=m.movie_id) }}">{{ m.title }}</a>
-          <span class="muted">{{ m.genre }} · {{ m.release_year }}</span>
-          <span class="score">★ {{ '%.2f'|format(m.avg_rating) }} <small>({{ m.rating_count }})</small></span></li>
-      {% endfor %}
-    </ol>
-    {% else %}<p class="muted">No movie has {{ MIN_RATING_COUNT }} ratings yet.</p>{% endif %}
-    <p><a href="{{ url_for('top_rated_page') }}">See full ranking →</a></p>
-  </section>
-  <section>
-    <h2>Best genres</h2>
-    <ol class="rank">
-      {% for g in genres %}
-      <li>{{ g.genre }}<span class="score">★ {{ '%.2f'|format(g.avg_rating) }} <small>({{ g.total_ratings }})</small></span></li>
-      {% endfor %}
-    </ol>
-    <p><a href="{{ url_for('genres_page') }}">Compare all genres →</a></p>
-  </section>
-</div>
+<!-- Closing call to action -->
+<section class="discovery-banner">
+    <div>
+        <span class="eyebrow">YOUR NEXT MOVIE NIGHT</span>
+        <h2>Ready to find something amazing?</h2>
+
+        <p>
+            Explore the collection and use ratings to discover your next film.
+        </p>
+    </div>
+
+    <a class="btn" href="{{ url_for('recommendations_page') }}">
+        Explore Recommendations →
+    </a>
+</section>
+
 {% endblock %}
